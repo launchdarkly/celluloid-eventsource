@@ -10,6 +10,7 @@ require 'uri'
 module Celluloid
   class EventSource
     include Celluloid::IO
+    Celluloid.boot
 
     attr_reader :url, :with_credentials, :heartbeat_timeout, :logger
     attr_reader :ready_state

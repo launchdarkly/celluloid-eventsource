@@ -3,6 +3,7 @@ require "celluloid/eventsource/version"
 require 'celluloid/io'
 require 'celluloid/eventsource/response_parser'
 require 'uri'
+require 'socksify'
 
 module Celluloid
   class EventSource
@@ -24,6 +25,12 @@ module Celluloid
       @ready_state = CONNECTING
       @with_credentials = options.delete(:with_credentials) { false }
       @headers = default_request_headers.merge(options.fetch(:headers, {}))
+      if options[:proxy]
+        proxyUri = URI(options[:proxy])
+        if proxyUri.scheme == 'socks'
+          @proxy = proxyUri
+        end
+      end
 
       @event_type_buffer = ""
       @last_event_id_buffer = ""
@@ -96,14 +103,17 @@ module Celluloid
     end
 
     def establish_connection
-      @socket = Celluloid::IO::TCPSocket.new(@url.host, @url.port)
+      Socksify::proxy(@proxy && @proxy.host, @proxy && @proxy.port) {
+        sock = ::TCPSocket.new(@url.host, @url.port)
+        @socket = Celluloid::IO::TCPSocket.new(sock)
 
-      if ssl?
-        @socket = Celluloid::IO::SSLSocket.new(@socket)
-        @socket.connect
-      end
+        if ssl?
+          @socket = Celluloid::IO::SSLSocket.new(@socket)
+          @socket.connect
+        end
 
-      @socket.write(request_string)
+        @socket.write(request_string)
+      }
 
       until @parser.headers?
         @parser << @socket.readline

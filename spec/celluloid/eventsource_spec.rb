@@ -39,6 +39,16 @@ RSpec.describe Celluloid::EventSource do
       headers = es.instance_variable_get('@headers')
       expect(headers['Authorization']).to eq(auth_header["Authorization"])
     end
+
+    it 'parses a socks proxy' do
+      proxy = "socks://myhost:8080"
+      allow_any_instance_of(Celluloid::EventSource).to receive_message_chain(:async, :listen)
+      es = Celluloid::EventSource.new("http://#{url}", :proxy => proxy)
+
+      instanceProxy = es.instance_variable_get('@proxy')
+      expect(instanceProxy['host']).to eq("myhost")
+      expect(instanceProxy['port']).to eq(8080)
+    end
   end
 
   context 'callbacks' do

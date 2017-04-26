@@ -14,9 +14,7 @@ RSpec.configure do |config|
   config.expose_dsl_globally = false
 
   config.around(:each) do |ex|
-    Celluloid.boot
     ex.run
-    Celluloid.shutdown
   end
 
   # Run specs in random order to surface order dependencies. If you find an

@@ -39,6 +39,28 @@ RSpec.describe Celluloid::EventSource do
       headers = es.instance_variable_get('@headers')
       expect(headers['Authorization']).to eq(auth_header["Authorization"])
     end
+
+    it 'parses an http proxy' do
+      proxy = "http://myhost:8080"
+      allow_any_instance_of(Celluloid::EventSource).to receive_message_chain(:async, :listen)
+      es = Celluloid::EventSource.new("http://#{url}", :proxy => proxy)
+
+      instanceProxy = es.instance_variable_get('@proxy')
+      expect(instanceProxy.host).to eq('myhost')
+      expect(instanceProxy.port).to eq(8080)
+    end
+
+    it 'parses an http proxy auth' do
+      proxy = "http://user:pass@myhost:8080"
+      allow_any_instance_of(Celluloid::EventSource).to receive_message_chain(:async, :listen)
+      es = Celluloid::EventSource.new("http://#{url}", :proxy => proxy)
+
+      instanceProxy = es.instance_variable_get('@proxy')
+      expect(instanceProxy.host).to eq('myhost')
+      expect(instanceProxy.port).to eq(8080)
+      expect(instanceProxy.user).to eq('user')
+      expect(instanceProxy.password).to eq('pass')
+    end
   end
 
   context 'callbacks' do
@@ -67,6 +89,7 @@ RSpec.describe Celluloid::EventSource do
 
         Celluloid::EventSource.new("#{dummy.endpoint}/error") do |conn|
           conn.on_error do |error|
+            conn.close
             future.signal(value_class.new({ msg: error, state: conn.ready_state }))
           end
         end

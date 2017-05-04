@@ -3,6 +3,7 @@ require 'celluloid/eventsource/version'
 require 'celluloid/io'
 require 'celluloid/eventsource/response_parser'
 require 'uri'
+require 'base64'
 
 module Celluloid
   class EventSource
@@ -24,6 +25,13 @@ module Celluloid
       @ready_state = CONNECTING
       @with_credentials = options.delete(:with_credentials) { false }
       @headers = default_request_headers.merge(options.fetch(:headers, {}))
+      proxy = ENV['HTTP_PROXY'] || ENV['http_proxy'] || options[:proxy]
+      if proxy
+        proxyUri = URI(proxy)
+        if proxyUri.scheme == 'http' || proxyUri.scheme == 'https'
+          @proxy = proxyUri
+        end
+      end
 
       @event_type_buffer = ""
       @last_event_id_buffer = ""
@@ -96,7 +104,22 @@ module Celluloid
     end
 
     def establish_connection
-      @socket = Celluloid::IO::TCPSocket.new(@url.host, @url.port)
+      if @proxy
+        sock = ::TCPSocket.new(@proxy.host, @proxy.port)
+        @socket = Celluloid::IO::TCPSocket.new(sock)
+
+        @socket.write(connect_string)
+        @socket.flush
+        while (line = @socket.readline.chomp) != '' do @parser << line end
+
+        unless @parser.status_code == 200
+          @on[:error].call({status_code: @parser.status_code, body: @parser.chunk})
+          return
+        end
+      else
+        sock = ::TCPSocket.new(@url.host, @url.port)
+        @socket = Celluloid::IO::TCPSocket.new(sock)
+      end
 
       if ssl?
         @socket = Celluloid::IO::SSLSocket.new(@socket)
@@ -104,6 +127,7 @@ module Celluloid
       end
 
       @socket.write(request_string)
+      @socket.flush()
 
       until @parser.headers?
         @parser << @socket.readline
@@ -232,6 +256,16 @@ module Celluloid
       headers = @headers.map { |k, v| "#{k}: #{v}" }
 
       ["GET #{url.request_uri} HTTP/1.1", headers].flatten.join("\r\n").concat("\r\n\r\n")
+    end
+
+    def connect_string
+      req = "CONNECT #{url.host}:#{url.port} HTTP/1.1\r\n"
+      req << "Host: #{url.host}:#{url.port}\r\n"
+      if @proxy.user || @proxy.password
+        encoded_credentials = Base64.strict_encode64([@proxy.user || '', @proxy.password || ''].join(":"))
+        req << "Proxy-Authorization: Basic #{encoded_credentials}\r\n"
+      end
+      req << "\r\n"
     end
 
   end

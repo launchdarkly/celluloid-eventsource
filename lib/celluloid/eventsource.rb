@@ -116,17 +116,14 @@ module Celluloid
           @on[:error].call({status_code: @parser.status_code, body: @parser.chunk})
           return
         end
-        if ssl?
-          @socket = Celluloid::IO::SSLSocket.new(@socket)
-          @socket.connect
-        end
       else
         sock = ::TCPSocket.new(@url.host, @url.port)
         @socket = Celluloid::IO::TCPSocket.new(sock)
-        if ssl?
-          @socket = Celluloid::IO::SSLSocket.new(@socket)
-          @socket.connect
-        end
+      end
+
+      if ssl?
+        @socket = Celluloid::IO::SSLSocket.new(@socket)
+        @socket.connect
       end
 
       @socket.write(request_string)

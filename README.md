@@ -1,6 +1,6 @@
 # Celluloid::Eventsource
 
-[![Gem Version](https://badge.fury.io/rb/celluloid-eventsource.png)](http://badge.fury.io/rb/ld-celluloid-eventsource)
+[![Gem Version](https://badge.fury.io/rb/celluloid-eventsource.png)](http://badge.fury.io/rb/ld-celluloid-eventsource) [![CircleCI](https://circleci.com/gh/launchdarkly/celluloid-eventsource/tree/master.svg?style=svg)](https://circleci.com/gh/launchdarkly/celluloid-eventsource/tree/master)
 
 An EventSource client based off Celluloid::IO.
 

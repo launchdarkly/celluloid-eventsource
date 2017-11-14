@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'celluloid-io', '~> 0.17.3'
   spec.add_dependency 'celluloid', '~> 0.18.0.pre'
-  spec.add_dependency 'nio4r', '~> 1.1'
+  spec.add_dependency 'nio4r', '>= 1.1'
   spec.add_dependency 'http_parser.rb', '~> 0.6.0'
 
   spec.add_development_dependency 'atomic', '~> 1.1'

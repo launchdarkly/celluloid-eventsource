@@ -105,7 +105,7 @@ RSpec.describe Celluloid::EventSource do
 
         Celluloid::EventSource.new(dummy.endpoint) do |conn|
           conn.on_message do |message|
-            if '3' == message.last_event_id
+            if '3' == message.id
               future.signal(value_class.new({ msg: message, state: conn.ready_state }))
               conn.close
             end
@@ -113,9 +113,9 @@ RSpec.describe Celluloid::EventSource do
         end
 
         payload = future.value
-        expect(payload[:msg]).to be_a(Celluloid::EventSource::MessageEvent)
+        expect(payload[:msg]).to be_a(Celluloid::EventSource::EventParser::MessageEvent)
         expect(payload[:msg].type).to eq(:message)
-        expect(payload[:msg].last_event_id).to eq('3')
+        expect(payload[:msg].id).to eq('3')
         expect(payload[:state]).to eq(Celluloid::EventSource::OPEN)
       end
 
@@ -189,9 +189,9 @@ RSpec.describe Celluloid::EventSource do
         end
 
         payload = future.value
-        expect(payload[:msg]).to be_a(Celluloid::EventSource::MessageEvent)
+        expect(payload[:msg]).to be_a(Celluloid::EventSource::EventParser::MessageEvent)
         expect(payload[:msg].type).to eq(custom)
-        expect(payload[:msg].last_event_id).to eq('1')
+        expect(payload[:msg].id).to eq('1')
         expect(payload[:state]).to eq(Celluloid::EventSource::OPEN)
       end
     end

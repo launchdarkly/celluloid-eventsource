@@ -91,7 +91,7 @@ class DummyServer < WEBrick::HTTPServer
     def do_GET(req, res)
       res.content_type = 'application/json; charset=utf-8'
       res.status = 400
-      res.keep_alive = false  # true by default
+      res.keep_alive = true  # ensure that we can correctly read error response body on a keep-alive connection
       res.body = '{"msg": "blop"}'
     end
   end

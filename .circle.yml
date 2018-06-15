@@ -1,7 +1,0 @@
-ruby:
-  version: 2.3.1
-
-dependencies:
-  pre:
-    - gem update bundler
-    - bundle install

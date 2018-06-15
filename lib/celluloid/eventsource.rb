@@ -93,6 +93,7 @@ module Celluloid
 
     def close
       @socket.close if @socket
+      @socket = nil
       @ready_state = CLOSED
     end
 

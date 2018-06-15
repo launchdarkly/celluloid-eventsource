@@ -1,5 +1,8 @@
 version: 2
 
+# This file should be updated whenever we change the list of supported Ruby versions
+# in the Ruby SDK build.
+
 workflows:
   version: 2
   test:

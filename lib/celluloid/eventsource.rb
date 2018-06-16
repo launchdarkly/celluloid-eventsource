@@ -156,10 +156,6 @@ module Celluloid
           end
 
           if parser.status_code != 200
-            # Consume response body if present
-            if !parser.headers["Content-Length"].nil?
-              parser << @socket.read(parser.headers["Content-Length"].to_i)
-            end
             close
             @on[:error].call({status_code: parser.status_code, body: parser.chunk})
           elsif parser.headers['Content-Type'] && parser.headers['Content-Type'].include?("text/event-stream")

@@ -20,6 +20,7 @@ ruby-docker-template: &ruby-docker-template
         if [[ $CIRCLE_JOB == test-jruby* ]]; then
           gem install jruby-openssl; # required by bundler, no effect on Ruby MRI
         fi
+    - run: ruby -v
     - run: gem install bundler
     - run: bundle install
     - run: mkdir ./rspec

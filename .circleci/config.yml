@@ -43,10 +43,11 @@ jobs:
     <<: *ruby-docker-template
     docker:
       - image: circleci/ruby:2.4.3-jessie
-  test-jruby-9.1:
-    <<: *ruby-docker-template
-    docker:
-      - image: circleci/jruby:9-jdk
+  # circleci/jruby:9-jdk now uses JRuby 9.2.0, which we are not yet compatible with
+  # test-jruby-9.1:
+  #   <<: *ruby-docker-template
+  #   docker:
+  #     - image: circleci/jruby:9-jdk
 
   # The following very slow job uses an Ubuntu container to run the Ruby versions that
   # CircleCI doesn't provide Docker images for.
@@ -54,7 +55,7 @@ jobs:
     machine:
       image: circleci/classic:latest
     environment:
-      - RUBIES: "ruby-2.1.9 ruby-2.0.0 ruby-1.9.3 jruby-9.0.5.0"
+      - RUBIES: "ruby-2.1.9 ruby-2.0.0 ruby-1.9.3 jruby-9.0.5.0 jruby-9.1.17.0"
     steps:
       - checkout
       - run:

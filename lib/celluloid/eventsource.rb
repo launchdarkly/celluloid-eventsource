@@ -93,6 +93,7 @@ module Celluloid
 
     def close
       @socket.close if @socket
+      @socket = nil
       @ready_state = CLOSED
     end
 
@@ -155,12 +156,11 @@ module Celluloid
           end
 
           if parser.status_code != 200
-            until @socket.eof?
-              parser << readline_with_timeout(@socket)
+            # Consume response body if present
+            if !parser.headers["Content-Length"].nil?
+              parser << @socket.read(parser.headers["Content-Length"].to_i)
             end
-            # If the server returns a non-200, we don't want to close-- we just want to
-            # report an error
-            # close
+            close
             @on[:error].call({status_code: parser.status_code, body: parser.chunk})
           elsif parser.headers['Content-Type'] && parser.headers['Content-Type'].include?("text/event-stream")
             @chunked = !parser.headers["Transfer-Encoding"].nil? && parser.headers["Transfer-Encoding"].include?("chunked")
